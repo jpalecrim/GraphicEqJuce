@@ -95,6 +95,14 @@ void GraphicEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+    juce::dsp::ProcessSpec spec;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = 1; 
+    spec.sampleRate = sampleRate;
+
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
 }
 
 void GraphicEqAudioProcessor::releaseResources()
@@ -166,7 +174,8 @@ bool GraphicEqAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* GraphicEqAudioProcessor::createEditor()
 {
-    return new GraphicEqAudioProcessorEditor (*this);
+    //return new GraphicEqAudioProcessorEditor (*this); 
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -183,6 +192,27 @@ void GraphicEqAudioProcessor::setStateInformation (const void* data, int sizeInB
     // whose contents will have been created by the getStateInformation() call.
 }
 
+juce::AudioProcessorValueTreeState::ParameterLayout
+    GraphicEqAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut",
+                                                           "LowCut",
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                           20.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("HiCut",
+                                                           "HiCut",
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                           20000.f));
+    
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("1 kHz",
+                                                           "1 kHz",
+                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+                                                            0.0f));
+
+    return layout;
+}
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
