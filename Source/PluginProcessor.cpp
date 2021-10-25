@@ -91,14 +91,14 @@ void GraphicEqAudioProcessor::changeProgramName (int index, const juce::String& 
 }
 
 //==============================================================================
-void GraphicEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void GraphicEqAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = 1; 
+    spec.numChannels = 1;
     spec.sampleRate = sampleRate;
 
     leftChain.prepare(spec);
@@ -106,13 +106,30 @@ void GraphicEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
     auto chainSettings = getChainSettings(apvts);
     auto peak1k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
-                                                                                1000,
-                                                                                0.707,
-                  juce::Decibels::decibelsToGain(chainSettings.peak1kGainInDecibels));
+        1000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak1kGainInDecibels));
 
     leftChain.get<ChainPositions::peak1k>().coefficients = *peak1k;
     rightChain.get<ChainPositions::peak1k>().coefficients = *peak1k;
 
+    auto peak2k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        2000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak2kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
+    rightChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
+    
+    
+    auto Lowcut = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, chainSettings.lowCutFreq, 1);
+    leftChain.get<ChainPositions::Lowcut>().coefficients = *Lowcut;
+    rightChain.get<ChainPositions::Lowcut>().coefficients = *Lowcut;
+
+    auto HiCut = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, chainSettings.hiCutFreq, 1);
+    leftChain.get<ChainPositions::HiCut>().coefficients = *HiCut;
+    rightChain.get<ChainPositions::HiCut>().coefficients = *HiCut;
+    
 }
 
 void GraphicEqAudioProcessor::releaseResources()
@@ -161,6 +178,8 @@ void GraphicEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+   
+    //-------------------processamento dos peaks---------------------------------------//
 
     auto chainSettings = getChainSettings(apvts);
     auto peak1k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
@@ -171,14 +190,32 @@ void GraphicEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     leftChain.get<ChainPositions::peak1k>().coefficients = *peak1k;
     rightChain.get<ChainPositions::peak1k>().coefficients = *peak1k;
 
-    juce::dsp::AudioBlock<float> block(buffer);
+    auto peak2k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        2000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak2kGainInDecibels));
 
+    leftChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
+    rightChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
+    
+    //--------------------prcoessamento dos filtros-------------------------------------//
+
+    auto Lowcut = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), chainSettings.lowCutFreq, 1);
+
+    leftChain.get<ChainPositions::Lowcut>().coefficients = *Lowcut;
+    rightChain.get<ChainPositions::Lowcut>().coefficients = *Lowcut;
+
+    auto HiCut = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), chainSettings.hiCutFreq, 1);
+    leftChain.get<ChainPositions::HiCut>().coefficients = *HiCut;
+    rightChain.get<ChainPositions::HiCut>().coefficients = *HiCut;
+
+
+    //----------------------------------------- processamento do plugin--------------//  
+    juce::dsp::AudioBlock<float> block(buffer);
     auto leftBlock = block.getSingleChannelBlock(0);
     auto rightBlock = block.getSingleChannelBlock(1);
-
     juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
     juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-
     leftChain.process(leftContext);
     rightChain.process(rightContext);
 
@@ -237,11 +274,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut",
                                                            "LowCut",
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
                                                            20.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("HiCut",
                                                            "HiCut",
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
                                                            20000.f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak31",
