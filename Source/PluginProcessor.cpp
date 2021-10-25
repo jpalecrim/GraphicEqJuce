@@ -105,6 +105,49 @@ void GraphicEqAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlo
     rightChain.prepare(spec);
 
     auto chainSettings = getChainSettings(apvts);
+
+    //-----------------------------------Peaks----------------------------//
+
+    auto peak31 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        31,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak31GainInDecibels));
+
+    leftChain.get<ChainPositions::peak31>().coefficients = *peak31;
+    rightChain.get<ChainPositions::peak31>().coefficients = *peak31;
+
+    auto peak62 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        62,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak62GainInDecibels));
+
+    leftChain.get<ChainPositions::peak62>().coefficients = *peak62;
+    rightChain.get<ChainPositions::peak62>().coefficients = *peak62;
+
+    auto peak125 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        125,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak125GainInDecibels));
+
+    leftChain.get<ChainPositions::peak125>().coefficients = *peak125;
+    rightChain.get<ChainPositions::peak125>().coefficients = *peak125;
+
+    auto peak250 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        250,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak250GainInDecibels));
+
+    leftChain.get<ChainPositions::peak250>().coefficients = *peak250;
+    rightChain.get<ChainPositions::peak250>().coefficients = *peak250;
+
+    auto peak500 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        500,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak500GainInDecibels));
+
+    leftChain.get<ChainPositions::peak500>().coefficients = *peak500;
+    rightChain.get<ChainPositions::peak500>().coefficients = *peak500;
+
     auto peak1k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
         1000,
         0.707,
@@ -120,8 +163,33 @@ void GraphicEqAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlo
 
     leftChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
     rightChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
+
+    auto peak4k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        4000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak4kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak4k>().coefficients = *peak4k;
+    rightChain.get<ChainPositions::peak4k>().coefficients = *peak4k;
+
+    auto peak8k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        8000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak8kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak8k>().coefficients = *peak8k;
+    rightChain.get<ChainPositions::peak8k>().coefficients = *peak8k;
+
+    auto peak16k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        16000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak16kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak16k>().coefficients = *peak16k;
+    rightChain.get<ChainPositions::peak16k>().coefficients = *peak16k;
     
-    
+  //-------------------------------------------Filters--------------------------------------------------------//
+
     auto Lowcut = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, chainSettings.lowCutFreq, 1);
     leftChain.get<ChainPositions::Lowcut>().coefficients = *Lowcut;
     rightChain.get<ChainPositions::Lowcut>().coefficients = *Lowcut;
@@ -182,6 +250,46 @@ void GraphicEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     //-------------------processamento dos peaks---------------------------------------//
 
     auto chainSettings = getChainSettings(apvts);
+    auto peak31 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        31,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak31GainInDecibels));
+
+    leftChain.get<ChainPositions::peak31>().coefficients = *peak31;
+    rightChain.get<ChainPositions::peak31>().coefficients = *peak31;
+
+    auto peak62 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        62,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak62GainInDecibels));
+
+    leftChain.get<ChainPositions::peak62>().coefficients = *peak62;
+    rightChain.get<ChainPositions::peak62>().coefficients = *peak62;
+
+    auto peak125 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        125,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak125GainInDecibels));
+
+    leftChain.get<ChainPositions::peak125>().coefficients = *peak125;
+    rightChain.get<ChainPositions::peak125>().coefficients = *peak125;
+
+    auto peak250 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        250,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak250GainInDecibels));
+
+    leftChain.get<ChainPositions::peak250>().coefficients = *peak250;
+    rightChain.get<ChainPositions::peak250>().coefficients = *peak250;
+
+    auto peak500 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        500,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak500GainInDecibels));
+
+    leftChain.get<ChainPositions::peak500>().coefficients = *peak500;
+    rightChain.get<ChainPositions::peak500>().coefficients = *peak500;
+
     auto peak1k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
         1000,
         0.707,
@@ -197,6 +305,30 @@ void GraphicEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     leftChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
     rightChain.get<ChainPositions::peak2k>().coefficients = *peak2k;
+
+    auto peak4k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        4000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak4kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak4k>().coefficients = *peak4k;
+    rightChain.get<ChainPositions::peak4k>().coefficients = *peak4k;
+
+    auto peak8k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        8000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak8kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak8k>().coefficients = *peak8k;
+    rightChain.get<ChainPositions::peak8k>().coefficients = *peak8k;
+
+    auto peak16k = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+        16000,
+        0.707,
+        juce::Decibels::decibelsToGain(chainSettings.peak16kGainInDecibels));
+
+    leftChain.get<ChainPositions::peak16k>().coefficients = *peak16k;
+    rightChain.get<ChainPositions::peak16k>().coefficients = *peak16k;
     
     //--------------------prcoessamento dos filtros-------------------------------------//
 
@@ -273,60 +405,60 @@ juce::AudioProcessorValueTreeState::ParameterLayout
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut",
-                                                           "LowCut",
+                                                           "High Pass",
                                                            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
                                                            20.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("HiCut",
-                                                           "HiCut",
+                                                           "Low Pass",
                                                            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
                                                            20000.f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak31",
-                                                           "peak500",
+                                                           "31 Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak62",
-                                                           "peak62",
+                                                           "62 Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak125",
-                                                           "peak125",
+                                                           "125 Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak250",
-                                                           "peak250",
+                                                           "250 Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak500",
-                                                           "peak500",
+                                                           "500 Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak1k",
-                                                           "peak1k",
+                                                           "1k Hz",
                                                             juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                             0.0f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak2k",
-                                                           "peak2k",
+                                                           "2k Hz",
                                                             juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                             0.0f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak4k",
-                                                           "peak4k",
+                                                           "4k Hz",
                                                             juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                             0.0f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak8k",
-                                                           "peak8k",
+                                                           "8k Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("peak16k",
-                                                           "peak16k",
+                                                           "16k Hz",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
                                                            0.0f));
 
